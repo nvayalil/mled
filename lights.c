@@ -5,8 +5,7 @@
 #include <ws2811/pwm.h>
 
 #include <stdio.h>
-#include <stdint.h>
-
+#include <stdlib.h>
 #include "lights.h"
 
 
@@ -89,6 +88,55 @@ void fill_leds(uint16_t led_count, uint32_t color)
     }
 }
 
+void set_all(uint8_t r, uint8_t g, uint8_t b)
+{
+    uint32_t color = (r << 16) | (g << 8) | b;
+    for (uint16_t i = 0; i < LED_COUNT; i++)
+    {
+        ledstring.channel[0].leds[i] = color;
+    }
+    
+}
+
+void set_pixel(uint16_t position, uint8_t r, uint8_t g, uint8_t b)
+{
+    ledstring.channel[0].leds[position] = (r << 16) | (g << 8) | b;
+}
+
+void show_strip()
+{
+    ws2811_return_t ret;
+    if ((ret = ws2811_render(&ledstring)) != WS2811_SUCCESS)
+    {
+        fprintf(stderr, "ws2811_render failed: %s\n", ws2811_get_return_t_str(ret));
+    }
+}
+
+uint32_t  get_random_color()
+{
+    return (uint32_t) random() & 0xFFFFFF;
+}
+
+uint32_t get_color(int16_t val)
+{
+    uint8_t r, g, b;
+    val *= 2;
+    if(val > 255)
+    {
+        r = val - 255;
+        g = (510 - val);
+        b = 0;
+    }
+    else
+    {
+        r = 0;
+        g = val;
+        b = (254 - val);
+    }
+    return (((uint32_t)r) << 16 | ((uint32_t)g) << 8 | ((uint32_t)b));
+}
+
+#if 0
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -117,3 +165,4 @@ uint32_t get_color(int16_t val)
 
     return (((uint32_t)red) << 16 | ((uint32_t)green) << 8 | ((uint32_t)blue));
 }
+#endif
